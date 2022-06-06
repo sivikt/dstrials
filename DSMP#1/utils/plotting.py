@@ -1,18 +1,21 @@
 import seaborn as sns
 
 
+UNIFORM_COLORS = 'pastel'
+
+
 def _ordered_countplot(y, **kwargs):
-    ax = sns.countplot(y=y, palette="husl", order=y.value_counts().index)
+    ax = sns.countplot(y=y, palette=UNIFORM_COLORS, order=y.value_counts().index)
     ax.bar_label(ax.containers[0])
 
 
 def _barplot(x, y, **kwargs):
-    ax = sns.barplot(x=x, y=y, orient='h', palette="husl", order=y.value_counts().index)
+    ax = sns.barplot(x=x, y=y, orient='h', palette=UNIFORM_COLORS, order=y.value_counts().index)
     ax.bar_label(ax.containers[0])
 
 
 def _boxplot(x, **kwargs):
-    sns.boxplot(x=x, palette="husl")
+    sns.boxplot(x=x, palette=UNIFORM_COLORS)
     
 
 def _distplot(*args, **kwargs):    
@@ -24,40 +27,80 @@ def _distplot(*args, **kwargs):
     feature_plot_kws = feature_plot_kws.get(var_val, None) if feature_plot_kws else None
     
     if feature_plot_kws:           
-        sns.histplot(data[value_col], palette="Set1", color=kwargs['color'], **feature_plot_kws)
+        sns.histplot(data[value_col], palette=UNIFORM_COLORS, **feature_plot_kws)
     else:
-        sns.histplot(data[value_col], kde=True, palette="Set1")
+        sns.histplot(data[value_col], kde=True, palette=UNIFORM_COLORS)
         
 
-def ordered_countplot_facet_grid(data, plots_for, values_col, **kwargs):
-    g = sns.FacetGrid(data, col=plots_for, **kwargs)
+def ordered_countplot_facet_grid(data, plots_for, values_col, title=None, facet_kws=None):
+    facet_kws = facet_kws if facet_kws else {}
+        
+    g = sns.FacetGrid(data, col=plots_for, **facet_kws)
     g.map(_ordered_countplot, values_col)
-    #g.fig.suptitle(title)
+    
+    g.set_axis_labels('count', 'category')
+    
+    if title:
+        g.fig.subplots_adjust(top=0.93)
+        g.fig.suptitle(title)
+        
     return g
 
 
-def perc_barplot_facet_grid(data, plots_for, x_col, y_col, **kwargs):
-    g = sns.FacetGrid(data, col=plots_for, xlim=(0, 100), **kwargs)
+def perc_barplot_facet_grid(data, plots_for, x_col, y_col, title=None, facet_kws=None):
+    facet_kws = facet_kws if facet_kws else {}
+    
+    g = sns.FacetGrid(data, col=plots_for, xlim=(0, 100), **facet_kws)
     g.map(_barplot, y_col, x_col)
+    
+    g.set_axis_labels('count', 'category')
+    
+    if title:
+        g.fig.subplots_adjust(top=0.93)
+        g.fig.suptitle(title)
+        
     return g
     
 
-def boxplot_facet_grid(data, plots_for, values_col, **kwargs):
-    g = sns.FacetGrid(data, col=plots_for, **kwargs)
+def boxplot_facet_grid(data, plots_for, values_col, title=None, facet_kws=None):
+    facet_kws = facet_kws if facet_kws else {}
+    
+    g = sns.FacetGrid(data, col=plots_for, **facet_kws)
     g.map(_boxplot, values_col)
+    
+    if title:
+        g.fig.subplots_adjust(top=0.95)
+        g.fig.suptitle(title)
+        
     return g
 
 
-def distplot_facet_grid(data, plots_for, values_col, feature_plot_kws=None, facet_kws=None):
-    if facet_kws:
-        g = sns.FacetGrid(data, col=plots_for, **facet_kws)
-    else:
-        g = sns.FacetGrid(data, col=plots_for)
+def distplot_count_facet_grid(data, plots_for, values_col, title=None, feature_plot_kws=None, facet_kws=None):
+    facet_kws = facet_kws if facet_kws else {}
+    feature_plot_kws = feature_plot_kws if feature_plot_kws else {}
+    
+    g = sns.FacetGrid(data, col=plots_for, **facet_kws)
+    g.map_dataframe(_distplot, plots_for, values_col, feature_plot_kws=feature_plot_kws)
+    g.set_axis_labels('value', 'count')
         
-    if feature_plot_kws:
-        g.map_dataframe(_distplot, plots_for, values_col, feature_plot_kws=feature_plot_kws)
-    else:
-        g.map_dataframe(_distplot, plots_for, values_col)
+    if title:
+        g.fig.subplots_adjust(top=0.95)
+        g.fig.suptitle(title)
+        
+    return g
+
+
+def distplot_percent_facet_grid(data, plots_for, values_col, title=None, feature_plot_kws=None, facet_kws=None):
+    facet_kws = facet_kws if facet_kws else {}
+    feature_plot_kws = feature_plot_kws if feature_plot_kws else {}
+    
+    g = sns.FacetGrid(data, col=plots_for, **facet_kws)
+    g.map_dataframe(_distplot, plots_for, values_col, feature_plot_kws=feature_plot_kws)
+    g.set_axis_labels('value', 'cumulative percent')
+    
+    if title:
+        g.fig.subplots_adjust(top=0.95)
+        g.fig.suptitle(title)
         
     return g
 
