@@ -1,3 +1,7 @@
+import math
+
+import matplotlib.pyplot as plt
+
 import seaborn as sns
 
 
@@ -105,19 +109,69 @@ def distplot_percent_facet_grid(data, plots_for, values_col, title=None, feature
     return g
 
 
-"""
-import matplotlib.pyplot as plt
- 
-fig, axes = plt.subplots(2, 3, figsize=(18, 10))
- 
-fig.suptitle('Geeksforgeeks - 2 x 3 axes Box plot with data')
- 
-iris = sns.load_dataset("iris")
+def pies_grid(data, features_names, grid_cols: int = 3, pie_kws=None, subplots_kws=None):
+    subplots_kws = subplots_kws if subplots_kws else {}
+    pie_kws = pie_kws if pie_kws else dict(autopct='%.2f%%', fontsize=11, colormap='Pastel2_r')
+    
+    
+    if 'figsize' not in subplots_kws:
+        subplots_kws['figsize'] = (18,30)
+        
+    fig, axes = plt.subplots(math.ceil(len(features_names)/grid_cols), grid_cols, **subplots_kws)
+    axes = [ax for axes_rows in axes for ax in axes_rows]
 
-sns.boxplot(ax=axes[0, 0], data=iris, x='species', y='petal_width')
-sns.boxplot(ax=axes[0, 1], data=iris, x='species', y='petal_length')
-sns.boxplot(ax=axes[0, 2], data=iris, x='species', y='sepal_width')
-sns.boxplot(ax=axes[1, 0], data=iris, x='species', y='sepal_length')
-sns.boxplot(ax=axes[1, 1], data=iris, x='species', y='petal_width')
-sns.boxplot(ax=axes[1, 2], data=iris, x='species', y='petal_length')
-"""
+    for i in range(len(axes)-len(features_names)):
+        fig.delaxes(axes[-i-1])
+
+    for i, c in enumerate(features_names):        
+        data[c].value_counts()[::-1].plot(
+            kind='pie',
+            ax=axes[i],
+            title=c,
+            **pie_kws
+        )
+
+        axes[i].set_ylabel('')
+        
+    fig.tight_layout()
+
+    
+def scatter_plots(data, features_names, group_sz, scatter_plot_kws=None, subplots_kws=None):
+    subplots_kws = subplots_kws if subplots_kws else {}
+    scatter_plot_kws = scatter_plot_kws if scatter_plot_kws else {}
+    
+    if 'figsize' not in subplots_kws:
+        subplots_kws['figsize'] = (10,10)
+
+    if 'palette' not in scatter_plot_kws:
+        scatter_plot_kws['palette'] = UNIFORM_COLORS
+        
+    feats_cnt = len(features_names)    
+    plots_num = feats_cnt + int((feats_cnt**2 - feats_cnt)/2)
+    fig, axes = plt.subplots(math.ceil(plots_num/group_sz), group_sz, **subplots_kws)
+    axes = [ax for axes_rows in axes for ax in axes_rows]
+
+    for i in range(len(axes)-plots_num):
+        fig.delaxes(axes[-i-1])
+    
+    a = 0
+    for i, f1 in enumerate(features_names):
+        for f2 in features_names[i:]:
+            sns.scatterplot(ax=axes[a], data=data, x=f1, y=f2, **scatter_plot_kws)
+            a += 1
+    
+    fig.tight_layout()
+    
+#             g = sns.PairGrid(
+#                 data, 
+#                 x_vars=group2, 
+#                 y_vars=group1,  
+#                 **pair_grid_kws
+#             )
+
+#             g.map_diag(sns.histplot)
+#             g.map_lower(sns.scatterplot)
+#             #g.map_lower(sns.regplot, scatter_kws={'alpha':0.3})
+
+#             g.add_legend()
+        
