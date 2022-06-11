@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 
 import seaborn as sns
 
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
 
 UNIFORM_COLORS = 'pastel'
 
@@ -136,7 +139,7 @@ def pies_grid(data, features_names, grid_cols: int = 3, pie_kws=None, subplots_k
     fig.tight_layout()
 
     
-def scatter_plots(data, features_names, group_sz, scatter_plot_kws=None, subplots_kws=None):
+def paired_scatter_plots(data, features_names, group_sz, scatter_plot_kws=None, subplots_kws=None):
     subplots_kws = subplots_kws if subplots_kws else {}
     scatter_plot_kws = scatter_plot_kws if scatter_plot_kws else {}
     
@@ -160,7 +163,7 @@ def scatter_plots(data, features_names, group_sz, scatter_plot_kws=None, subplot
             sns.scatterplot(ax=axes[a], data=data, x=f1, y=f2, **scatter_plot_kws)
             a += 1
     
-    fig.tight_layout()
+    #fig.tight_layout()
     
 #             g = sns.PairGrid(
 #                 data, 
@@ -174,4 +177,28 @@ def scatter_plots(data, features_names, group_sz, scatter_plot_kws=None, subplot
 #             #g.map_lower(sns.regplot, scatter_kws={'alpha':0.3})
 
 #             g.add_legend()
-        
+
+def plx_bars(data, x_features_names, y_name, cols=2):
+    rows=5
+    fig = make_subplots(
+        rows=rows, cols=cols, subplot_titles=[f"Median - {f}" for f in x_features_names]
+    )
+
+    for i, f in enumerate(x_features_names):
+        r = int(i/cols)
+        c = i - r*cols 
+        fig.add_bar(
+            x=data[f], 
+            y=data[y_name],
+            marker=dict(color=[4, 5, 6], coloraxis="coloraxis"),
+            orientation='h', 
+            row=r+1, col=c+1
+        )
+
+    fig.update_layout(
+        title_text="Median values for numeric features across target",
+        showlegend=False,
+        height=900
+    )
+    fig.update_coloraxes(showscale=False)
+    return fig

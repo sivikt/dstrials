@@ -4,3 +4,5 @@ jupyter==1.0.0
 matplotlib==3.5.1
 requests==2.27.1
 seaborn==0.11.2
+plotly==5.8.2
+jupyter_dash==0.4.2
