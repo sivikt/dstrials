@@ -202,3 +202,5 @@ def plx_bars(data, x_features_names, y_name, cols=2):
     )
     fig.update_coloraxes(showscale=False)
     return fig
+
+
